@@ -1,22 +1,13 @@
 package github
 
-import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-)
+import "encoding/json"
 
 func jsonGet(url string, v interface{}) error {
-	r, err := http.Get(url)
+	b, err := httpGet(url)
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status %d for %s", r.StatusCode, url)
-	}
-	defer r.Body.Close()
-	d := json.NewDecoder(r.Body)
-	if err := d.Decode(v); err != nil {
+	if err := json.Unmarshal(b, v); err != nil {
 		return err
 	}
 	return nil
