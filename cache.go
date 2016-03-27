@@ -31,7 +31,7 @@ func newCacheEntry(url string) *cacheEntry {
 }
 
 func (ce *cacheEntry) get() ([]byte, error) {
-	ce.data, ce.err = httpRawGet(ce.url)
+	ce.data, ce.err = httpGet0(ce.url, nil)
 	ce.cond.L.Lock()
 	ce.cond.Broadcast()
 	ce.cond.L.Unlock()
