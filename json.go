@@ -2,8 +2,11 @@ package github
 
 import "encoding/json"
 
-func jsonGet(url string, v interface{}) error {
-	b, err := httpGet(url)
+type jsonGetter func(url string) ([]byte, error)
+
+// jsonGet0 is common logic for jsonGet.
+func jsonGet0(url string, v interface{}, getter jsonGetter) error {
+	b, err := getter(url)
 	if err != nil {
 		return err
 	}
@@ -11,4 +14,8 @@ func jsonGet(url string, v interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func jsonGet(url string, v interface{}) error {
+	return jsonGet0(url, v, httpGet)
 }
