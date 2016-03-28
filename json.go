@@ -19,3 +19,14 @@ func jsonGet0(url string, v interface{}, getter jsonGetter) error {
 func jsonGet(url string, v interface{}) error {
 	return jsonGet0(url, v, httpGet)
 }
+
+func (c *Client) jsonGet(url string, v interface{}) error {
+	b, err := c.httpGet(url)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, v); err != nil {
+		return err
+	}
+	return nil
+}

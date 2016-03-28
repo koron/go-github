@@ -42,7 +42,8 @@ func httpGet(url string) ([]byte, error) {
 	ce, created := getCacheEntry(url)
 	// GET via cacheEntry
 	if created {
-		return ce.get()
+		_, d, err := ce.get()
+		return d, err
 	}
 	ce.cond.L.Lock()
 	for ce.processing() {

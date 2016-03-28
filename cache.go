@@ -1,6 +1,7 @@
 package github
 
 import (
+	"net/http"
 	"sync"
 	"time"
 )
@@ -13,33 +14,41 @@ var (
 	CacheTTL = time.Minute * 5
 )
 
+type cacheProc func(url string) (http.Header, []byte, error)
+
 type cacheEntry struct {
-	url  string
-	time time.Time
-	err  error
-	data []byte
+	method string
+	url    string
+	proc   cacheProc
+
+	time   time.Time
+	err    error
+	header http.Header
+	data   []byte
 
 	cond *sync.Cond
 }
 
-func newCacheEntry(url string) *cacheEntry {
+func newCacheEntry(method, url string, proc cacheProc) *cacheEntry {
 	return &cacheEntry{
-		url:  url,
-		time: time.Now(),
-		cond: sync.NewCond(new(sync.Mutex)),
+		method: method,
+		url:    url,
+		proc:   proc,
+		time:   time.Now(),
+		cond:   sync.NewCond(new(sync.Mutex)),
 	}
 }
 
-func (ce *cacheEntry) get() ([]byte, error) {
-	ce.data, ce.err = httpGet0(ce.url, nil)
+func (ce *cacheEntry) get() (http.Header, []byte, error) {
+	ce.header, ce.data, ce.err = ce.proc(ce.url)
 	ce.cond.L.Lock()
 	ce.cond.Broadcast()
 	ce.cond.L.Unlock()
-	return ce.data, ce.err
+	return ce.header, ce.data, ce.err
 }
 
 func (ce *cacheEntry) processing() bool {
-	return ce.data == nil && ce.err == nil
+	return ce.header == nil && ce.data == nil && ce.err == nil
 }
 
 func (ce *cacheEntry) expired() bool {
@@ -55,7 +64,7 @@ func getCacheEntry(url string) (ce *cacheEntry, created bool) {
 	cacheLock.Lock()
 	ce, ok := cacheMap[url]
 	if !ok || ce.expired() {
-		ce = newCacheEntry(url)
+		ce = newCacheEntry("", url, nil)
 		cacheMap[url] = ce
 		created = true
 	}
