@@ -1,7 +1,6 @@
 package github
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -17,10 +16,15 @@ type Release struct {
 
 // Latest gets latest release info.
 func Latest(owner, repo string) (*Release, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest",
-		owner, repo)
+	return DefaultClient.release(owner, repo, "latest")
+}
+
+// release get a release information.
+func (c *Client) release(owner, repo, relName string) (*Release, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/%s",
+		owner, repo, relName)
 	rel := new(Release)
-	err := jsonGet(url, rel)
+	err := c.jsonGet(url, rel)
 	if err != nil {
 		return nil, err
 	}
