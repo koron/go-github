@@ -59,5 +59,14 @@ func (c *Client) httpGet0(url string) ([]byte, error) {
 }
 
 func (c *Client) httpGet(url string) ([]byte, error) {
-	return c.httpGet0(url)
+	if c.DisableCache {
+		return c.httpGet0(url)
+	}
+	v, err := c.cacheDo(url, func(id string) (interface{}, error) {
+		return c.httpGet0(url)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return v.([]byte), err
 }

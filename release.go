@@ -24,10 +24,10 @@ func Latest(owner, repo string) (*Release, error) {
 func (c *Client) release(owner, repo, relName string) (*Release, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/%s",
 		owner, repo, relName)
-	rel := new(Release)
-	err := c.jsonGet(url, rel)
+	v := new(Release)
+	err := c.jsonGet(url, v)
 	if err != nil {
 		return nil, err
 	}
-	return rel, nil
+	return v, nil
 }

@@ -16,7 +16,7 @@ type Client struct {
 
 	l      sync.Mutex
 	client *http.Client
-	cache  map[string]*cacheEntry
+	cache  *cache
 }
 
 var (
@@ -30,19 +30,11 @@ func (c *Client) logf(format string, v ...interface{}) {
 	c.Logger.Printf(format, v...)
 }
 
-func cacheKey(method, url string) string {
-	return method + ";" + url
-}
-
-func (c *Client) getCache(method, url string, proc cacheProc) (ce *cacheEntry, created bool) {
-	k := cacheKey(method, url)
+func (c *Client) cacheDo(id string, proc cacheProc) (interface{}, error) {
 	c.l.Lock()
-	ce, ok := c.cache[k]
-	if !ok || ce.expired() {
-		ce = newCacheEntry(method, url, proc)
-		c.cache[k] = ce
-		created = true
+	if c.cache == nil {
+		c.cache = newCache()
 	}
 	c.l.Unlock()
-	return ce, created
+	return c.cache.do(id, proc)
 }
