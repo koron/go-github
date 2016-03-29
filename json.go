@@ -2,8 +2,8 @@ package github
 
 import "encoding/json"
 
-func jsonGet(url string, v interface{}) error {
-	b, err := httpGet(url)
+func (c *Client) jsonGet(url string, v interface{}) error {
+	b, err := c.httpGet(url)
 	if err != nil {
 		return err
 	}
