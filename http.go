@@ -12,8 +12,12 @@ func (c *Client) newRequest(method, url string, body io.Reader) (*http.Request, 
 	if err != nil {
 		return nil, err
 	}
-	if c.Username != "" && c.Token != "" {
-		r.SetBasicAuth(c.Username, c.Token)
+	if c.Token != "" {
+		if c.Username != "" {
+			r.SetBasicAuth(c.Username, c.Token)
+		} else {
+			r.Header.Set("Authorization", "token " + c.Token)
+		}
 	}
 	return r, nil
 }
