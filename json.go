@@ -1,9 +1,12 @@
 package github
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
-func (c *Client) jsonGet(url string, v interface{}) error {
-	b, err := c.httpGet(url)
+func (c *Client) jsonGet(url string, pivot time.Time, v interface{}) error {
+	b, err := c.httpGet(url, pivot)
 	if err != nil {
 		return err
 	}
